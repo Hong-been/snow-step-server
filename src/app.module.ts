@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { config } from "src/config/config"
 import { ConfigModule } from '@nestjs/config'; 
+import { AuthModule } from './auth/auth.module';
 
 /**
  * 모듈에서 컨트롤러와 서비스를 연결한다.
@@ -28,6 +29,7 @@ import { ConfigModule } from '@nestjs/config';
       autoLoadEntities: true,
       synchronize: true, // 개발 환경에서만 true
     }),
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
