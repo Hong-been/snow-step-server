@@ -8,6 +8,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule, // ConfigModule 가져오기
     PassportModule.register({defaultStrategy: "google"}),
     JwtModule.registerAsync({
       imports: [ConfigModule],

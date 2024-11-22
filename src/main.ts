@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ValidationPipe } from "@nestjs/common";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -20,5 +21,6 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document); // '/api' 경로에서 Swagger UI 제공
 
   await app.listen(port, () => console.log(`Server is listening! Port is ${port}`));
+  app.useGlobalPipes(new ValidationPipe());
 }
 bootstrap();
