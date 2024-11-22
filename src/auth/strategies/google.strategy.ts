@@ -12,10 +12,15 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       clientSecret: configService.get<string>('GOOGLE_CLIENT_SECRET'),
       callbackURL: configService.get<string>('GOOGLE_REDIRECT_URI'),
       scope: ['email', 'profile'], // 구글에서 요청할 데이터
-    })
+    });
   }
 
-  async validate(accessToken: string, refreshToken: string, profile: Profile, done: VerifyCallback): Promise<any> {
+  async validate(
+    accessToken: string,
+    refreshToken: string,
+    profile: Profile,
+    done: VerifyCallback,
+  ): Promise<any> {
     const { id, name, emails, photos } = profile;
     const user = {
       googleId: id,

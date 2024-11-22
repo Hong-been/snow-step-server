@@ -6,5 +6,7 @@ export const config = () => ({
   JWT_REFRESH_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
-  GOOGLE_REDIRECT_URI: process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3001/auth/google/callback',
-})
+  GOOGLE_REDIRECT_URI:
+    process.env.GOOGLE_REDIRECT_URI ||
+    'http://localhost:3001/auth/google/callback',
+});
