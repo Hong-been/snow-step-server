@@ -1,7 +1,9 @@
 import {
   Body,
+  ConflictException,
   Controller,
   Get,
+  InternalServerErrorException,
   Post,
   Req,
   Res,
@@ -13,6 +15,7 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CookieOptions, Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { User } from './auth.entity';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -46,7 +49,8 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   @ApiOperation({
     summary: 'Google OAuth Callback',
-    description: '구글 인가 코드를 받아, 구글 회원정보를 받아 핸들링',
+    description:
+      '전달받은 구글 인가 코드로 구글 회원정보를 조회하여 회원인지 구분한다.',
   })
   @ApiResponse({
     status: 200,
@@ -87,16 +91,25 @@ export class AuthController {
   async googleCallback(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<{ user: CreateUserDto }> {
+  ): Promise<
+    | { isRegistered: true; user: User }
+    | { isRegistered: false; user: CreateUserDto }
+  > {
     const user = req.user as CreateUserDto;
 
-    const { accessToken, refreshToken } = await this.authService.login(user);
+    const foundUserAndToken = await this.authService.signIn(user);
 
-    res
-      .cookie('refreshToken', refreshToken, this._refreshTokenOptions)
-      .set(this._refreshTokenHeaderOptions(accessToken));
+    if (foundUserAndToken) {
+      const { user, accessToken, refreshToken } = foundUserAndToken;
 
-    return { user };
+      res
+        .cookie('refreshToken', refreshToken, this._refreshTokenOptions)
+        .set(this._refreshTokenHeaderOptions(accessToken));
+
+      return { isRegistered: true, user };
+    }
+
+    return { isRegistered: false, user };
   }
 
   @Post('signUp')
@@ -106,7 +119,7 @@ export class AuthController {
       '사용자로부터 추가 정보를 받아 회원가입을 완료합니다. 이미 회원가입된 이메일은 오류로 처리됩니다.',
   })
   @ApiResponse({
-    status: 200,
+    status: 201,
     description: '회원가입이 성공적으로 완료되었습니다.',
     content: {
       'application/json': {
@@ -136,10 +149,6 @@ export class AuthController {
         examples: {
           conflict: {
             summary: '중복 이메일',
-            value: {
-              status: 'failure',
-              message: 'Email already registered. Please log in.',
-            },
           },
         },
       },
@@ -153,24 +162,32 @@ export class AuthController {
         examples: {
           validationError: {
             summary: '유효하지 않은 닉네임',
-            value: {
-              status: 'failure',
-              message: 'Nickname contains invalid characters.',
-            },
           },
         },
       },
     },
   })
-  async signUp(@Res() res: Response, @Body() createUserDto: CreateUserDto) {
-    const { accessToken, refreshToken } =
-      await this.authService.signUp(createUserDto);
+  async signUp(
+    @Res({ passthrough: true }) res: Response,
+    @Body() createUserDto: CreateUserDto,
+  ) {
+    try {
+      const { accessToken, refreshToken } =
+        await this.authService.signUp(createUserDto);
 
-    res
-      .cookie('refreshToken', refreshToken, this._refreshTokenOptions)
-      .set(this._refreshTokenHeaderOptions(accessToken));
+      res
+        .cookie('refreshToken', refreshToken, this._refreshTokenOptions)
+        .set(this._refreshTokenHeaderOptions(accessToken));
 
-    return { user: createUserDto };
+      return { user: createUserDto };
+    } catch (error) {
+      if (error.code === '23505') {
+        throw new ConflictException(error.detail);
+      } else {
+        console.error(error);
+        throw new InternalServerErrorException();
+      }
+    }
   }
 
   @Get('google')

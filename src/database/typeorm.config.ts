@@ -5,7 +5,7 @@ import { Injectable } from '@nestjs/common';
 export class TypeormConfig implements TypeOrmOptionsFactory {
   createTypeOrmOptions(): TypeOrmModuleOptions {
     const config: TypeOrmModuleOptions = {
-      url: '', // postgresql://username:password@hostname:port/database
+      // url: '', // postgresql://username:password@hostname:port/database
       type: 'postgres',
       host: 'localhost',
       port: 5432,
