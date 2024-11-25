@@ -9,4 +9,5 @@ export const config = () => ({
   GOOGLE_REDIRECT_URI:
     process.env.GOOGLE_REDIRECT_URI ||
     'http://localhost:3001/auth/google/callback',
+  NODE_ENV: process.env.NODE_ENV || 'production',
 });

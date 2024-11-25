@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { GoogleJwtDto } from './dto/googleJwt.dto';
+import { UserDto } from './dto/user.dto';
 
 @Injectable()
 export class AuthService {
@@ -10,9 +10,8 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) {}
 
-  async googleLogin(
-    user: any,
-    jwt: GoogleJwtDto,
+  async login(
+    user: UserDto,
   ): Promise<{ accessToken: string; refreshToken: string }> {
     const payload = { sub: user.googleId, email: user.email };
 
@@ -30,13 +29,6 @@ export class AuthService {
       ),
     });
 
-    await this.storeGoogleJwt(jwt);
-
     return { accessToken, refreshToken };
-  }
-
-  async storeGoogleJwt(jwt: GoogleJwtDto) {
-    // 디비에 jwt 2종류 저장
-    console.log(`jwt saved!`);
   }
 }

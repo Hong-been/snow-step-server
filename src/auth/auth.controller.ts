@@ -1,19 +1,10 @@
-import { AuthService } from './auth.service';
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Req,
-  Res,
-  UseGuards,
-  ValidationPipe,
-} from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
-import { Request, Response } from 'express';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { GoogleJwtDto } from './dto/googleJwt.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Request, Response } from 'express';
+import { AuthService } from './auth.service';
+import { UserDto } from './dto/user.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -23,12 +14,12 @@ export class AuthController {
     private readonly configService: ConfigService,
   ) {}
 
-  @Post('google/callback')
+  @Get('google/callback')
   @UseGuards(AuthGuard('google'))
   @ApiOperation({
     summary: 'Google OAuth Callback',
     description:
-      '구글 JWT를 받고, 서비스 JWT를 반환한다. 구글 토큰은 디비에 저장한다.',
+      '구글 인가 코드를 받아, 구글 회원정보를 받아 회원가입 or 로그인시킨다.',
   })
   @ApiResponse({
     status: 200,
@@ -36,30 +27,34 @@ export class AuthController {
       'JWT Access Token issued and Refresh Token set as HttpOnly cookie.',
     example: {
       accessToken: 'accessToken',
-      refreshToken: 'refreshToken',
     },
   })
   async googleCallback(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-    @Body(ValidationPipe) googleJwt: GoogleJwtDto,
-  ): Promise<{ accessToken: string }> {
-    const user = req.user;
-    const { accessToken, refreshToken } = await this.authService.googleLogin(
-      user,
-      googleJwt,
-    );
+  ): Promise<{ user: UserDto }> {
+    const user = req.user as UserDto;
+    const { accessToken, refreshToken } = await this.authService.login(user);
 
-    res.cookie('refreshToken', refreshToken, {
-      httpOnly: true,
-      secure: true, //개발시 false
-      sameSite: 'strict',
-      maxAge: parseInt(
-        this.configService.get<string>('JWT_REFRESH_EXPIRES_IN'),
-      ),
-    });
+    const env = this.configService.get('NODE_ENV');
+    const isDev = env === 'development';
+    res
+      .cookie('refreshToken', refreshToken, {
+        // 개발시 false
+        httpOnly: isDev ? false : true,
+        secure: isDev ? false : true,
+        //
+        sameSite: 'strict',
+        maxAge: parseInt(
+          this.configService.get<string>('JWT_REFRESH_EXPIRES_IN'),
+        ),
+      })
+      .set({
+        authorization: accessToken,
+        'Access-Control-Expose-Headers': 'authorization',
+      });
 
-    return { accessToken };
+    return { user };
   }
 
   @Get('google')

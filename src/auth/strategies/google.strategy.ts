@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
 import { Profile } from 'passport';
+import { UserDto } from '../dto/user.dto';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
@@ -22,16 +23,16 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     done: VerifyCallback,
   ): Promise<any> {
     const { id, name, emails, photos } = profile;
-    const user = {
-      googleId: id,
-      email: emails[0].value,
-      firstName: name.givenName,
-      lastName: name.familyName,
-      picture: photos[0].value,
-      accessToken,
-      refreshToken,
+    const user: UserDto = {
+      googleId: id, //105646760566475465730
+      email: emails[0].value, //ghdqlsdl9633@gmail.com
+      firstName: name.givenName, //홍빈
+      lastName: name.familyName, //이
+      picture: photos[0].value, //https://lh3.googleusercontent.com/a/ACg8ocKWA9iz_XVrmh8C_qSy5oGThAWs436greTmQSwwRCtmzBzSGw=s96-c
     };
 
+    //accessToken ya29.a0AeDClZDZHg4DPZngC...
     done(null, user);
+    return user;
   }
 }

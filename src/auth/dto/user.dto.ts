@@ -2,17 +2,17 @@ import { IsString } from 'class-validator';
 
 export class UserDto {
   @IsString()
+  googleId: string;
+
+  @IsString()
   email: string;
 
   @IsString()
-  username: string;
+  firstName: string;
 
   @IsString()
-  profile: string;
+  lastName: string;
 
   @IsString()
-  googleAccessToken: string;
-
-  @IsString()
-  googleRefreshToken: string;
+  picture: string;
 }
