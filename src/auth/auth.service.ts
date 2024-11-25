@@ -10,6 +10,9 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) {}
 
+  /**
+   * access, token 신규 발급
+   */
   async login(
     user: CreateUserDto,
   ): Promise<{ accessToken: string; refreshToken: string }> {
@@ -28,6 +31,17 @@ export class AuthService {
         this.configService.get<string>('JWT_REFRESH_EXPIRES_IN'),
       ),
     });
+
+    return { accessToken, refreshToken };
+  }
+
+  /** access, token 신규 발급, DB에 신규 등록 */
+  async signUp(
+    user: CreateUserDto,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    const { accessToken, refreshToken } = await this.login(user);
+
+    // DB에 회원저장
 
     return { accessToken, refreshToken };
   }
