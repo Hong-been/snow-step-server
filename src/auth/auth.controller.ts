@@ -4,7 +4,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
-import { UserDto } from './dto/user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -18,22 +18,51 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   @ApiOperation({
     summary: 'Google OAuth Callback',
-    description:
-      '구글 인가 코드를 받아, 구글 회원정보를 받아 회원가입 or 로그인시킨다.',
+    description: '구글 인가 코드를 받아, 구글 회원정보를 받아 핸들링',
   })
   @ApiResponse({
     status: 200,
-    description:
-      'JWT Access Token issued and Refresh Token set as HttpOnly cookie.',
-    example: {
-      accessToken: 'accessToken',
+    description: '회원 상태에 따라 응답이 달라집니다.',
+    content: {
+      'application/json': {
+        examples: {
+          registeredUser: {
+            summary: '이미 가입된 회원',
+            value: {
+              isRegistered: true,
+              user: {
+                email: 'ghdqlsdl9633@gmail.com',
+                nickName: 'redbean',
+                firstName: 'hongbeen',
+                lastName: 'lee',
+                picture: null,
+              },
+              token: 'JWT_TOKEN_HERE',
+            },
+          },
+          unregisteredUser: {
+            summary: '미가입 회원',
+            value: {
+              isRegistered: false,
+              user: {
+                email: 'ghdqlsdl9633@gmail.com',
+                firstName: 'hongbeen',
+                lastName: 'lee',
+                picture: null,
+              },
+              message: 'Additional registration required.',
+            },
+          },
+        },
+      },
     },
   })
   async googleCallback(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<{ user: UserDto }> {
-    const user = req.user as UserDto;
+  ): Promise<{ user: CreateUserDto }> {
+    const user = req.user as CreateUserDto;
+
     const { accessToken, refreshToken } = await this.authService.login(user);
 
     const env = this.configService.get('NODE_ENV');
