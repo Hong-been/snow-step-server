@@ -5,6 +5,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { config } from 'src/config/config';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
+import { TypeormConfig } from './database/typeorm.config';
+import { DataSource, DataSourceOptions } from 'typeorm';
 
 /**
  * 모듈에서 컨트롤러와 서비스를 연결한다.
@@ -19,15 +21,11 @@ import { AuthModule } from './auth/auth.module';
       isGlobal: true,
       load: [config],
     }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: 'postgres',
-      database: 'snow-step',
-      autoLoadEntities: true,
-      synchronize: true, // 개발 환경에서만 true
+    TypeOrmModule.forRootAsync({
+      useClass: TypeormConfig,
+      dataSourceFactory: async (options: DataSourceOptions) => {
+        return new DataSource(options).initialize();
+      },
     }),
     AuthModule,
   ],
