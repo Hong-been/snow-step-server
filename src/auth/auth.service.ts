@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserRepository } from './auth.repository';
 import { User } from './auth.entity';
+import { JwtPayload } from './dto/jwt-payload.dto';
 
 @Injectable()
 export class AuthService {
@@ -19,20 +20,23 @@ export class AuthService {
   async _createJwt(
     user: CreateUserDto,
   ): Promise<{ accessToken: string; refreshToken: string }> {
-    const payload = { sub: user.firstName, email: user.email };
+    const payload: JwtPayload = {
+      email: user.email,
+    };
+
+    const accessTokenExpiresIn = this.configService.get<string>(
+      'JWT_ACCESS_EXPIRES_IN',
+    );
+    const refreshTokenExpiresIn = this.configService.get<string>(
+      'JWT_REFRESH_EXPIRES_IN',
+    );
 
     const accessToken = await this.jwtService.signAsync(payload, {
-      secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
-      expiresIn: parseInt(
-        this.configService.get<string>('JWT_ACCESS_EXPIRES_IN'),
-      ),
+      expiresIn: accessTokenExpiresIn,
     });
 
     const refreshToken = await this.jwtService.signAsync(payload, {
-      secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-      expiresIn: parseInt(
-        this.configService.get<string>('JWT_REFRESH_EXPIRES_IN'),
-      ),
+      expiresIn: refreshTokenExpiresIn,
     });
 
     return { accessToken, refreshToken };
@@ -42,13 +46,15 @@ export class AuthService {
     return this.userRepository.findOneBy({ id });
   }
 
+  async findUserByEmail(email: string) {
+    return this.userRepository.findOneBy({ email });
+  }
+
   /** user를 받아서 이메일로 회원인지 아닌지 구분. 회원이면 토큰과 회원정보 반환.*/
   async signIn(
     user: CreateUserDto,
   ): Promise<null | { accessToken: string; refreshToken: string; user: User }> {
-    const foundUser = await this.userRepository.findOneBy({
-      email: user.email,
-    });
+    const foundUser = await this.findUserByEmail(user.email);
 
     if (foundUser) {
       const { accessToken, refreshToken } = await this._createJwt(user);

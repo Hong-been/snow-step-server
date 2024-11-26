@@ -8,6 +8,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './auth.entity';
 import { UserRepository } from './auth.repository';
+import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({
   imports: [
@@ -18,14 +19,11 @@ import { UserRepository } from './auth.repository';
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
-        signOptions: {
-          expiresIn: configService.get<string>('JWT_EXPIRES_IN') || '1h',
-        },
       }),
     }),
     TypeOrmModule.forFeature([User]),
   ],
-  providers: [AuthService, GoogleStrategy, UserRepository],
+  providers: [AuthService, GoogleStrategy, UserRepository, JwtStrategy],
   controllers: [AuthController],
 })
 export class AuthModule {}

@@ -9,21 +9,28 @@ import {
   Post,
   Req,
   Res,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { CookieOptions, Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './auth.entity';
+import { JwtAuthGuard } from './guard/authGuard';
 
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   private readonly _refreshTokenOptions: CookieOptions;
-  private readonly _refreshTokenHeaderOptions: (token: string) => object;
+  private readonly _accessTokenHeaderOptions: (token: string) => object;
 
   constructor(
     private readonly authService: AuthService,
@@ -41,8 +48,8 @@ export class AuthController {
         this.configService.get<string>('JWT_REFRESH_EXPIRES_IN'),
       ),
     };
-    this._refreshTokenHeaderOptions = (accessToken: string) => ({
-      authorization: accessToken,
+    this._accessTokenHeaderOptions = (accessToken: string) => ({
+      authorization: `Bearer ${accessToken}`,
       'Access-Control-Expose-Headers': 'authorization',
     });
   }
@@ -108,7 +115,7 @@ export class AuthController {
 
       res
         .cookie('refreshToken', refreshToken, this._refreshTokenOptions)
-        .set(this._refreshTokenHeaderOptions(accessToken));
+        .set(this._accessTokenHeaderOptions(accessToken));
 
       return { isRegistered: true, user };
     }
@@ -183,7 +190,7 @@ export class AuthController {
 
       res
         .cookie('refreshToken', refreshToken, this._refreshTokenOptions)
-        .set(this._refreshTokenHeaderOptions(accessToken));
+        .set(this._accessTokenHeaderOptions(accessToken));
 
       return { user };
     } catch (error) {
@@ -210,6 +217,29 @@ export class AuthController {
   googleLogin(): void {}
 
   @ApiOperation({
+    summary: 'JWT 토큰을 인증하고 토큰에 해당하는 유저 데이터를 반환한다.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '유저 정보를 반환',
+  })
+  @ApiResponse({
+    status: 401,
+    description: '토큰이 유요하지않음',
+  })
+  @ApiBearerAuth()
+  @Get('/me')
+  @UseGuards(JwtAuthGuard)
+  async me(@Req() req: Request): Promise<User> {
+    const foundUser = req.user as User; // 데코레이터 JwtAuthGuard 에 의해 불러와진다.
+    if (foundUser) {
+      return foundUser;
+    }
+
+    throw new UnauthorizedException();
+  }
+
+  @ApiOperation({
     summary: 'Find user by id',
   })
   @ApiResponse({
@@ -220,7 +250,9 @@ export class AuthController {
     status: 404,
     description: '해당 id 유저가 없음.',
   })
+  @ApiBearerAuth()
   @Get('/:id')
+  @UseGuards(JwtAuthGuard)
   async findByUser(@Param('id') id: number): Promise<User> {
     const foundUser = this.authService.findUserById(id);
     if (foundUser) {
