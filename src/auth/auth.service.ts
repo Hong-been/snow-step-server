@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -13,6 +13,41 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly userRepository: UserRepository,
   ) {}
+
+  async refreshTokens(
+    refreshToken: string,
+  ): Promise<{ accessToken: string; refreshToken: string }> {
+    const payload: JwtPayload = this.jwtService.verify(refreshToken, {
+      secret: this.configService.get<string>('JWT_SECRET'),
+    });
+
+    const user = await this.findUserByEmail(payload.email);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    // 새로운 토큰 발급
+    const accessTokenExpiresIn = this.configService.get<string>(
+      'JWT_ACCESS_EXPIRES_IN',
+    );
+    const refreshTokenExpiresIn = this.configService.get<string>(
+      'JWT_REFRESH_EXPIRES_IN',
+    );
+    const accessToken = await this.jwtService.signAsync(
+      { email: payload.email },
+      {
+        expiresIn: accessTokenExpiresIn,
+      },
+    );
+    const newRefreshToken = await this.jwtService.signAsync(
+      { email: payload.email },
+      {
+        expiresIn: refreshTokenExpiresIn,
+      },
+    );
+
+    return { accessToken, refreshToken: newRefreshToken };
+  }
 
   /**
    * access, token 신규 발급

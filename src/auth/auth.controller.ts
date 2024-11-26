@@ -16,6 +16,7 @@ import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
 import {
   ApiBearerAuth,
+  ApiCookieAuth,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -42,8 +43,8 @@ export class AuthController {
       // 개발시 false
       httpOnly: isDev ? false : true,
       secure: isDev ? false : true,
+      sameSite: isDev ? 'none' : 'strict',
       //
-      sameSite: 'strict',
       maxAge: parseInt(
         this.configService.get<string>('JWT_REFRESH_EXPIRES_IN'),
       ),
@@ -103,10 +104,7 @@ export class AuthController {
   async googleCallback(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<
-    | { isRegistered: true; user: User }
-    | { isRegistered: false; user: CreateUserDto }
-  > {
+  ): Promise<{ user: User }> {
     const user = req.user as CreateUserDto;
 
     const foundUserAndToken = await this.authService.signIn(user);
@@ -117,7 +115,7 @@ export class AuthController {
         .cookie('refreshToken', refreshToken, this._refreshTokenOptions)
         .set(this._accessTokenHeaderOptions(accessToken));
 
-      return { isRegistered: true, user };
+      return { user };
     }
 
     throw new NotFoundException({
@@ -228,6 +226,7 @@ export class AuthController {
     description: '토큰이 유요하지않음',
   })
   @ApiBearerAuth()
+  @ApiCookieAuth()
   @Get('/me')
   @UseGuards(JwtAuthGuard)
   async me(@Req() req: Request): Promise<User> {
@@ -237,6 +236,37 @@ export class AuthController {
     }
 
     throw new UnauthorizedException();
+  }
+
+  @ApiOperation({
+    summary: 'refresh가 유효하면 access를 새로 발급하고, 아니면 로그아웃',
+  })
+  @ApiCookieAuth()
+  @ApiBearerAuth()
+  @Get('/refresh')
+  async refresh(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<void> {
+    try {
+      const refreshToken = req.cookies['refreshToken'];
+
+      if (!refreshToken) {
+        throw new UnauthorizedException('Refresh token is missing');
+      }
+
+      // Refresh 토큰 검증 및 새로운 액세스 토큰 발급
+      const { accessToken, refreshToken: newRefreshToken } =
+        await this.authService.refreshTokens(refreshToken);
+
+      // 새로운 Refresh Token 저장
+      res
+        .cookie('refreshToken', newRefreshToken, this._refreshTokenOptions)
+        .set(this._accessTokenHeaderOptions(accessToken));
+    } catch (error) {
+      console.error('Error refreshing tokens:', error);
+      throw new UnauthorizedException('Invalid refresh token');
+    }
   }
 
   @ApiOperation({
