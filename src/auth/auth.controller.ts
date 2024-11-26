@@ -5,6 +5,7 @@ import {
   Get,
   InternalServerErrorException,
   NotFoundException,
+  Param,
   Post,
   Req,
   Res,
@@ -65,11 +66,13 @@ export class AuthController {
             value: {
               isRegistered: true,
               user: {
+                id: 1,
                 email: 'ghdqlsdl9633@gmail.com',
-                nickName: 'redbean',
+                userName: 'redbean',
                 firstName: 'hongbeen',
                 lastName: 'lee',
                 picture: null,
+                createdAt: '2024-11-26 01:50:08.406679',
               },
             },
           },
@@ -205,4 +208,25 @@ export class AuthController {
     description: 'Redirects to Google OAuth login page.',
   })
   googleLogin(): void {}
+
+  @ApiOperation({
+    summary: 'Find user by id',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '유저 정보를 반환',
+  })
+  @ApiResponse({
+    status: 404,
+    description: '해당 id 유저가 없음.',
+  })
+  @Get('/:id')
+  async findByUser(@Param('id') id: number): Promise<User> {
+    const foundUser = this.authService.findUserById(id);
+    if (foundUser) {
+      return foundUser;
+    }
+
+    throw new NotFoundException();
+  }
 }

@@ -13,8 +13,4 @@ export class UserRepository extends Repository<User> {
     const user = this.create(userData); // 엔티티 생성
     return await this.save(user);
   }
-
-  async findUserByEmail(userData: CreateUserDto): Promise<User | null> {
-    return this.findOne({ where: { email: userData.email } });
-  }
 }

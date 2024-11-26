@@ -38,11 +38,17 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
+  async findUserById(id: number) {
+    return this.userRepository.findOneBy({ id });
+  }
+
   /** user를 받아서 이메일로 회원인지 아닌지 구분. 회원이면 토큰과 회원정보 반환.*/
   async signIn(
     user: CreateUserDto,
   ): Promise<null | { accessToken: string; refreshToken: string; user: User }> {
-    const foundUser = await this.userRepository.findUserByEmail(user);
+    const foundUser = await this.userRepository.findOneBy({
+      email: user.email,
+    });
 
     if (foundUser) {
       const { accessToken, refreshToken } = await this._createJwt(user);
