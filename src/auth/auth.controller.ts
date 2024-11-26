@@ -4,6 +4,7 @@ import {
   Controller,
   Get,
   InternalServerErrorException,
+  NotFoundException,
   Post,
   Req,
   Res,
@@ -54,7 +55,8 @@ export class AuthController {
   })
   @ApiResponse({
     status: 200,
-    description: '회원 상태에 따라 응답이 달라집니다.',
+    description:
+      '가입된 회원이면 로그인을 진행하고, 미가입회원이면 not found 에러와 구글 사용자정보 반환',
     content: {
       'application/json': {
         examples: {
@@ -71,20 +73,20 @@ export class AuthController {
               },
             },
           },
-          unregisteredUser: {
-            summary: '미가입 회원',
-            value: {
-              isRegistered: false,
-              user: {
-                email: 'ghdqlsdl9633@gmail.com',
-                firstName: 'hongbeen',
-                lastName: 'lee',
-                picture: null,
-              },
-              message: 'Additional registration required.',
-            },
-          },
         },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description:
+      'google email로 조회한 가입회원이 없음. 구글 사용자정보를 반환함. POST /signUp에서 바디로 사용',
+    example: {
+      user: {
+        email: 'ghdqlsdl9633@gmail.com',
+        firstName: 'hongbeen',
+        lastName: 'lee',
+        picture: null,
       },
     },
   })
@@ -98,7 +100,6 @@ export class AuthController {
     const user = req.user as CreateUserDto;
 
     const foundUserAndToken = await this.authService.signIn(user);
-
     if (foundUserAndToken) {
       const { user, accessToken, refreshToken } = foundUserAndToken;
 
@@ -109,7 +110,9 @@ export class AuthController {
       return { isRegistered: true, user };
     }
 
-    return { isRegistered: false, user };
+    throw new NotFoundException({
+      user,
+    });
   }
 
   @Post('signUp')
@@ -172,14 +175,14 @@ export class AuthController {
     @Body() createUserDto: CreateUserDto,
   ) {
     try {
-      const { accessToken, refreshToken } =
+      const { user, accessToken, refreshToken } =
         await this.authService.signUp(createUserDto);
 
       res
         .cookie('refreshToken', refreshToken, this._refreshTokenOptions)
         .set(this._refreshTokenHeaderOptions(accessToken));
 
-      return { user: createUserDto };
+      return { user };
     } catch (error) {
       if (error.code === '23505') {
         throw new ConflictException(error.detail);
