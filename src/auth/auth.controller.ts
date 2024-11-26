@@ -45,9 +45,6 @@ export class AuthController {
       secure: isDev ? false : true,
       sameSite: isDev ? 'none' : 'strict',
       //
-      maxAge: parseInt(
-        this.configService.get<string>('JWT_REFRESH_EXPIRES_IN'),
-      ),
     };
     this._accessTokenHeaderOptions = (accessToken: string) => ({
       authorization: `Bearer ${accessToken}`,
@@ -112,7 +109,12 @@ export class AuthController {
       const { user, accessToken, refreshToken } = foundUserAndToken;
 
       res
-        .cookie('refreshToken', refreshToken, this._refreshTokenOptions)
+        .cookie('refreshToken', refreshToken, {
+          ...this._refreshTokenOptions,
+          maxAge: parseInt(
+            this.configService.get<string>('JWT_REFRESH_EXPIRES_IN'),
+          ),
+        })
         .set(this._accessTokenHeaderOptions(accessToken));
 
       return { user };
@@ -266,6 +268,30 @@ export class AuthController {
     } catch (error) {
       console.error('Error refreshing tokens:', error);
       throw new UnauthorizedException('Invalid refresh token');
+    }
+  }
+
+  @Post('/logout')
+  @ApiCookieAuth()
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Logs out the user by clearing the refresh token cookie.',
+    description:
+      'Clears the refresh token cookie and ends the user session on the client side.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully logged out.',
+  })
+  async logout(
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<{ message: string }> {
+    try {
+      res.clearCookie('refreshToken', this._refreshTokenOptions);
+      return { message: 'Successfully logged out.' };
+    } catch (error) {
+      console.error('Logout error:', error);
+      throw new InternalServerErrorException('Could not log out');
     }
   }
 
