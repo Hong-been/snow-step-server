@@ -1,7 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import {
+  DocumentBuilder,
+  SwaggerCustomOptions,
+  SwaggerModule,
+} from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
@@ -19,8 +23,13 @@ async function bootstrap() {
     .addBearerAuth() // JWT Bearer 인증 추가
     .build();
 
+  const customOptions: SwaggerCustomOptions = {
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+  };
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document); // '/api' 경로에서 Swagger UI 제공
+  SwaggerModule.setup('api', app, document, customOptions); // '/api' 경로에서 Swagger UI 제공
 
   await app.listen(port, () =>
     console.log(`Server is listening! Port is ${port}`),
