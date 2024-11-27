@@ -1,8 +1,10 @@
+import { Mail } from 'src/mail/entities/mail.entity';
 import {
   BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
@@ -31,4 +33,7 @@ export class User extends BaseEntity {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @OneToMany((type) => Mail, (mail) => mail.user)
+  mails: Mail[];
 }

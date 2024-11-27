@@ -24,7 +24,7 @@ import {
 import { CookieOptions, Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { User } from './auth.entity';
+import { User } from './entities/auth.entity';
 import { JwtAuthGuard } from './guard/authGuard';
 
 @ApiTags('Auth')
