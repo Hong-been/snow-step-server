@@ -1,4 +1,10 @@
-import { Column, CreateDateColumn, PrimaryGeneratedColumn } from 'typeorm';
+import { Mail } from 'src/mails/entities/mail.entity';
+import {
+  Column,
+  CreateDateColumn,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 export class Newsletter {
   @PrimaryGeneratedColumn()
@@ -27,4 +33,7 @@ export class Newsletter {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @OneToMany((type) => Mail, (mail) => mail.newsletters)
+  mail: Mail;
 }
