@@ -1,4 +1,4 @@
-import { Mail } from 'src/mail/entities/mail.entity';
+import { Mail } from 'src/mails/entities/mail.entity';
 import {
   BaseEntity,
   Column,
