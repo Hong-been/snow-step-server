@@ -1,4 +1,5 @@
 import { Mail } from 'src/mails/entities/mail.entity';
+import { Step } from 'src/steps/entities/step.entity';
 import {
   BaseEntity,
   Column,
@@ -36,4 +37,7 @@ export class User extends BaseEntity {
 
   @OneToMany((type) => Mail, (mail) => mail.user)
   mails: Mail[];
+
+  @OneToMany((type) => Step, (step) => step.user)
+  steps: Step[];
 }
