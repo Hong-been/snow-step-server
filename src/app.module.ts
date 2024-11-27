@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { config } from 'src/config/config';
-import { ConfigModule } from '@nestjs/config';
+import { DataSource, DataSourceOptions } from 'typeorm';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { TypeormConfig } from './database/typeorm.config';
-import { DataSource, DataSourceOptions } from 'typeorm';
+import { MailsModule } from './mails/mails.module';
 
 /**
  * 모듈에서 컨트롤러와 서비스를 연결한다.
@@ -28,6 +29,7 @@ import { DataSource, DataSourceOptions } from 'typeorm';
       },
     }),
     AuthModule,
+    MailsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
