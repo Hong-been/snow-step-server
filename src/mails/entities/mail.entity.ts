@@ -7,7 +7,7 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
-  OneToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -18,9 +18,6 @@ export class Mail extends BaseEntity {
 
   @Column({ length: 255 })
   subject: string;
-
-  @Column({ length: 255 })
-  from: string;
 
   @Column()
   content: string;
@@ -43,6 +40,6 @@ export class Mail extends BaseEntity {
   @ManyToOne((type) => Newsletter, (newsletter) => newsletter.id)
   newsletters: Newsletter;
 
-  @OneToOne((type) => Step, (step) => step.mail, { nullable: true })
-  step: Step;
+  @OneToMany((type) => Step, (step) => step.mail, { nullable: true })
+  steps: Step[];
 }

@@ -25,6 +25,6 @@ export class Step extends BaseEntity {
   @ManyToOne((type) => User, (user) => user.steps)
   user: User;
 
-  @OneToOne((type) => Mail, (mail) => mail.step, { nullable: true })
+  @ManyToOne((type) => Mail, (mail) => mail.steps, { nullable: true })
   mail: Mail;
 }

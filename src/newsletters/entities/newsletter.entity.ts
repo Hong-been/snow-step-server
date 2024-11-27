@@ -1,4 +1,5 @@
 import { Mail } from 'src/mails/entities/mail.entity';
+import { Subscription } from 'src/subscriptions/entities/subscription.entity';
 import {
   Column,
   CreateDateColumn,
@@ -16,16 +17,16 @@ export class Newsletter {
   @Column()
   email: string;
 
-  @Column()
+  @Column({ nullable: true })
   description: string;
 
-  @Column()
+  @Column({ nullable: true })
   serviceUrl: string;
 
-  @Column()
+  @Column({ nullable: true })
   subscriptionUrl: string;
 
-  @Column()
+  @Column({ nullable: true })
   archiveUrl: string;
 
   @Column({ default: false })
@@ -36,4 +37,7 @@ export class Newsletter {
 
   @OneToMany((type) => Mail, (mail) => mail.newsletters)
   mail: Mail;
+
+  @OneToMany((type) => Subscription, (subscription) => subscription.newsletters)
+  subscription: Subscription;
 }
