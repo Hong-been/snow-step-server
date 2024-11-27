@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { TypeormConfig } from './database/typeorm.config';
 import { MailsModule } from './mails/mails.module';
 import { NewslettersModule } from './newsletters/newsletters.module';
+import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 
 /**
  * 모듈에서 컨트롤러와 서비스를 연결한다.
@@ -32,6 +33,7 @@ import { NewslettersModule } from './newsletters/newsletters.module';
     AuthModule,
     MailsModule,
     NewslettersModule,
+    SubscriptionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
