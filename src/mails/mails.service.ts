@@ -6,6 +6,7 @@ import { MailRepository } from './mails.repository';
 import { Between } from 'typeorm';
 import { NewslettersRepository } from 'src/newsletters/newsletters.repository';
 import { UsersRepository } from 'src/auth/users.repository';
+import { SubscriptionsRepository } from 'src/subscriptions/subscriptions.repository';
 
 @Injectable()
 export class MailsService {
@@ -13,6 +14,7 @@ export class MailsService {
     private readonly mailRepository: MailRepository,
     private readonly newslettersRepository: NewslettersRepository,
     private readonly usersRepository: UsersRepository,
+    private readonly subscriptionsRepository: SubscriptionsRepository,
   ) {}
   async create(createMailDto: CreateMailDto) {
     const { subject, content, from, to } = createMailDto;
@@ -38,12 +40,27 @@ export class MailsService {
       newsletterId = foundNewsletter.id;
     }
 
-    const userId = await this.usersRepository.findUserByUsername(username);
+    const user = await this.usersRepository.findUserByUsername(username);
+
+    // 구독 여부 확인
+    const foundSubscription =
+      await this.subscriptionsRepository.findSubscriptionsByUserIdAndNewsletterId(
+        user.id,
+        newsletterId,
+      );
+
+    if (!foundSubscription) {
+      // 구독 등록
+      await this.subscriptionsRepository.createSubscription(
+        user.id,
+        newsletterId,
+      );
+    }
 
     const mail = await this.mailRepository.createMail(
       { subject, content },
       newsletterId,
-      userId.id,
+      user.id,
     );
     return mail;
   }
@@ -67,6 +84,9 @@ export class MailsService {
       },
       order: {
         createdAt: 'DESC',
+      },
+      relations: {
+        newsletter: true,
       },
     });
   }

@@ -1,34 +1,85 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiCookieAuth,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
+import { JwtAuthGuard } from 'src/auth/guard/authGuard';
 import { SubscriptionsService } from './subscriptions.service';
-import { CreateSubscriptionDto } from './dto/create-subscription.dto';
-import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
 
 @Controller('subscriptions')
 export class SubscriptionsController {
   constructor(private readonly subscriptionsService: SubscriptionsService) {}
 
+  @ApiOperation({ summary: '구독 생성' })
+  @ApiResponse({
+    status: 201,
+    description: '구독 생성 성공',
+  })
+  @ApiBearerAuth()
+  @ApiCookieAuth()
+  @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() createSubscriptionDto: CreateSubscriptionDto) {
-    return this.subscriptionsService.create(createSubscriptionDto);
+  createSubscription(
+    @Body('userId') userId: number,
+    @Body('newsletterId') newsletterId: number,
+  ) {
+    return this.subscriptionsService.create(userId, newsletterId);
   }
 
-  @Get()
-  findAll() {
-    return this.subscriptionsService.findAll();
+  @ApiBearerAuth()
+  @ApiCookieAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: '유저 구독 조회' })
+  @ApiResponse({
+    status: 200,
+    description: '구독 조회 성공',
+  })
+  @Get('user/:userId')
+  findSubscriptionsByUserId(@Param('userId') userId: number) {
+    return this.subscriptionsService.findSubscriptionsByUserId(userId);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.subscriptionsService.findOne(+id);
+  @ApiBearerAuth()
+  @ApiCookieAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: '뉴스레터 구독 조회' })
+  @ApiResponse({
+    status: 200,
+    description: '구독 조회 성공',
+  })
+  @Get('newsletter/:newsletterId')
+  findSubscriptionsByNewsletterId(@Param('newsletterId') newsletterId: number) {
+    return this.subscriptionsService.findSubscriptionsByNewsletterId(
+      newsletterId,
+    );
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateSubscriptionDto: UpdateSubscriptionDto) {
-    return this.subscriptionsService.update(+id, updateSubscriptionDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.subscriptionsService.remove(+id);
+  @ApiBearerAuth()
+  @ApiCookieAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: '구독 삭제' })
+  @ApiResponse({
+    status: 200,
+    description: '구독 삭제 성공',
+  })
+  @Delete('user/:userId/newsletter/:newsletterId')
+  deleteSubscriptionByUserIdAndNewsletterId(
+    @Param('userId') userId: number,
+    @Param('newsletterId') newsletterId: number,
+  ) {
+    return this.subscriptionsService.deleteSubscriptionByUserIdAndNewsletterId(
+      userId,
+      newsletterId,
+    );
   }
 }

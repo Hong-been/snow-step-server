@@ -23,7 +23,7 @@ export class Subscription {
   user?: User;
 
   @ManyToOne(() => Newsletter, (newsletter) => newsletter.subscription)
-  newsletter: Newsletter;
+  newsletter?: Newsletter;
 
   @CreateDateColumn()
   createdAt: Date;

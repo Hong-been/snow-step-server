@@ -1,26 +1,35 @@
 import { Injectable } from '@nestjs/common';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
+import { SubscriptionsRepository } from './subscriptions.repository';
 
 @Injectable()
 export class SubscriptionsService {
-  create(createSubscriptionDto: CreateSubscriptionDto) {
-    return 'This action adds a new subscription';
+  constructor(
+    private readonly subscriptionsRepository: SubscriptionsRepository,
+  ) {}
+
+  create(userId: number, newsletterId: number) {
+    return this.subscriptionsRepository.createSubscription(
+      userId,
+      newsletterId,
+    );
   }
 
-  findAll() {
-    return `This action returns all subscriptions`;
+  findSubscriptionsByUserId(userId: number) {
+    return this.subscriptionsRepository.findSubscriptionsByUserId(userId);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} subscription`;
+  findSubscriptionsByNewsletterId(newsletterId: number) {
+    return this.subscriptionsRepository.findSubscriptionsByNewsletterId(
+      newsletterId,
+    );
   }
 
-  update(id: number, updateSubscriptionDto: UpdateSubscriptionDto) {
-    return `This action updates a #${id} subscription`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} subscription`;
+  deleteSubscriptionByUserIdAndNewsletterId(
+    userId: number,
+    newsletterId: number,
+  ) {
+    return this.subscriptionsRepository.delete({ userId, newsletterId });
   }
 }
