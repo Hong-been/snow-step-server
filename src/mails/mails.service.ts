@@ -4,12 +4,47 @@ import { UpdateMailDto } from './dto/update-mail.dto';
 import { Mail } from './entities/mail.entity';
 import { MailRepository } from './mails.repository';
 import { Between } from 'typeorm';
+import { NewslettersRepository } from 'src/newsletters/newsletters.repository';
+import { UsersRepository } from 'src/auth/users.repository';
 
 @Injectable()
 export class MailsService {
-  constructor(private readonly mailRepository: MailRepository) {}
+  constructor(
+    private readonly mailRepository: MailRepository,
+    private readonly newslettersRepository: NewslettersRepository,
+    private readonly usersRepository: UsersRepository,
+  ) {}
   async create(createMailDto: CreateMailDto) {
-    const mail = await this.mailRepository.createMail(createMailDto);
+    const { subject, content, from, to } = createMailDto;
+    const fromName = from.match(/^(.+) </)?.[1];
+    const fromEmail = from.match(/<(.+)>/)?.[1];
+    const username = to.split('@')[0];
+    // newsletter에 등록된거면 해당 newsletterId를 저장.
+    // 등록안된거면 등록.
+    const foundNewsletter =
+      await this.newslettersRepository.findNewsletterByName(fromName);
+
+    let newsletterId: number;
+
+    if (!foundNewsletter) {
+      const createdNewsletter =
+        await this.newslettersRepository.createNewsletter({
+          name: fromName,
+          email: fromEmail,
+        });
+      newsletterId = createdNewsletter.id;
+      // TODO: 새로운 뉴스레터 등록 슬랙 알림 설정
+    } else {
+      newsletterId = foundNewsletter.id;
+    }
+
+    const userId = await this.usersRepository.findUserByUsername(username);
+
+    const mail = await this.mailRepository.createMail(
+      { subject, content },
+      newsletterId,
+      userId.id,
+    );
     return mail;
   }
 

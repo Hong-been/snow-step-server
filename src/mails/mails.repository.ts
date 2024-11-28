@@ -9,8 +9,12 @@ export class MailRepository extends Repository<Mail> {
     super(Mail, dataSource.createEntityManager());
   }
 
-  async createMail(mailData: CreateMailDto): Promise<Mail> {
-    const mail = this.create(mailData);
+  async createMail(
+    mailData: { subject: string; content: string },
+    newsletterId: number,
+    userId: number,
+  ): Promise<Mail> {
+    const mail = this.create({ ...mailData, newsletterId, userId });
     return await this.save(mail);
   }
 }

@@ -33,12 +33,4 @@ export class CreateMailDto {
   @IsString()
   @IsNotEmpty()
   content: string;
-
-  @ApiProperty({
-    description: 'Date and time when the email was received in UTC format',
-    example: '2024-11-26T12:34:56.000Z',
-  })
-  @IsISO8601()
-  @IsNotEmpty()
-  receivedAt: Date;
 }

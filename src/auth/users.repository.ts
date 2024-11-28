@@ -4,7 +4,7 @@ import { User } from './entities/auth.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
-export class UserRepository extends Repository<User> {
+export class UsersRepository extends Repository<User> {
   constructor(private readonly dataSource: DataSource) {
     super(User, dataSource.createEntityManager());
   }
@@ -12,5 +12,9 @@ export class UserRepository extends Repository<User> {
   async createUser(userData: CreateUserDto): Promise<User> {
     const user = this.create(userData); // 엔티티 생성
     return await this.save(user);
+  }
+
+  async findUserByUsername(username: string): Promise<User | null> {
+    return await this.findOneBy({ username });
   }
 }

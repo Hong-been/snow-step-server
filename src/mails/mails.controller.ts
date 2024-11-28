@@ -21,7 +21,6 @@ export class MailsController {
     summary: '메일 서버에서 메일이 오면 원문을 보낸다. 받아서 처리하는 API',
     description: 'subject, content, from, to, receivedAt을 파싱해서 사용',
   })
-  @UseGuards(JwtAuthGuard)
   @Post()
   async create(@Body() createMailDto: CreateMailDto) {
     return await this.mailsService.create(createMailDto);
