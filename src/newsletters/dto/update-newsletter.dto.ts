@@ -1,5 +1,7 @@
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { CreateNewsletterDto } from './create-newsletter.dto';
+import { NewsletterCategory } from '../entities/newsletter.entity';
+import { IsEnum } from 'class-validator';
 
 export class UpdateNewsletterDto extends PartialType(CreateNewsletterDto) {
   @ApiProperty({
@@ -43,4 +45,10 @@ export class UpdateNewsletterDto extends PartialType(CreateNewsletterDto) {
     description: '뉴스레터 유효성 여부',
   })
   isValidated: boolean;
+
+  @ApiProperty({
+    enum: NewsletterCategory,
+  })
+  @IsEnum(NewsletterCategory)
+  category: NewsletterCategory;
 }

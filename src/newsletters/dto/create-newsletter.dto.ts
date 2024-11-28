@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsISO8601, IsNotEmpty, IsString } from 'class-validator';
+import { IsEnum, IsISO8601, IsNotEmpty, IsString } from 'class-validator';
+import { NewsletterCategory } from '../entities/newsletter.entity';
 
 export class CreateNewsletterDto {
   @ApiProperty({
@@ -45,4 +46,10 @@ export class CreateNewsletterDto {
     example: false,
   })
   isValidated?: boolean;
+
+  @ApiProperty({
+    enum: NewsletterCategory,
+  })
+  @IsEnum(NewsletterCategory)
+  category?: NewsletterCategory;
 }
