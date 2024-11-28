@@ -58,8 +58,15 @@ export class MailsService {
 
     return this.mailRepository.find({
       where: {
-        id,
+        userId: id,
         createdAt: Between(startOfDay, endOfDay),
+      },
+      select: {
+        userId: false,
+        newsletterId: false,
+      },
+      order: {
+        createdAt: 'DESC',
       },
     });
   }
