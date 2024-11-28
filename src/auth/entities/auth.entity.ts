@@ -1,5 +1,6 @@
 import { Mail } from 'src/mails/entities/mail.entity';
 import { Step } from 'src/steps/entities/step.entity';
+import { Subscription } from 'src/subscriptions/entities/subscription.entity';
 import {
   Column,
   CreateDateColumn,
@@ -36,9 +37,14 @@ export class User {
   @CreateDateColumn()
   createdAt: Date;
 
-  @OneToMany(() => Mail, (mail) => mail.user)
+  @OneToMany(() => Mail, (mail) => mail.user, { eager: false })
   mails: Mail[];
 
-  @OneToMany(() => Step, (step) => step.user)
+  @OneToMany(() => Step, (step) => step.user, { eager: false })
   steps: Step[];
+
+  @OneToMany(() => Subscription, (subscription) => subscription.user, {
+    eager: false,
+  })
+  subscriptions: Subscription[];
 }

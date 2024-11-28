@@ -3,10 +3,12 @@ import { Subscription } from 'src/subscriptions/entities/subscription.entity';
 import {
   Column,
   CreateDateColumn,
+  Entity,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
+@Entity()
 export class Newsletter {
   @PrimaryGeneratedColumn()
   id: number;
@@ -35,9 +37,11 @@ export class Newsletter {
   @CreateDateColumn()
   createdAt: Date;
 
-  @OneToMany((type) => Mail, (mail) => mail.newsletters)
-  mail: Mail;
+  @OneToMany(() => Mail, (mail) => mail.newsletter, { eager: false })
+  mails?: Mail[];
 
-  @OneToMany((type) => Subscription, (subscription) => subscription.newsletters)
+  @OneToMany(() => Subscription, (subscription) => subscription.newsletter, {
+    eager: false,
+  })
   subscription: Subscription;
 }

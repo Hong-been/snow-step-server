@@ -1,16 +1,29 @@
 import { User } from 'src/auth/entities/auth.entity';
 import { Newsletter } from 'src/newsletters/entities/newsletter.entity';
-import { CreateDateColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
+@Entity()
 export class Subscription {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne((type) => User, (user) => user.mails)
-  user: User;
+  @Column()
+  userId: number;
 
-  @ManyToOne((type) => Newsletter, (newsletter) => newsletter.id)
-  newsletters: Newsletter;
+  @Column()
+  newsletterId: number;
+
+  @ManyToOne(() => User, (user) => user.subscriptions)
+  user?: User;
+
+  @ManyToOne(() => Newsletter, (newsletter) => newsletter.subscription)
+  newsletter: Newsletter;
 
   @CreateDateColumn()
   createdAt: Date;

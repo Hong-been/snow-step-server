@@ -1,13 +1,11 @@
 import { User } from 'src/auth/entities/auth.entity';
 import { Mail } from 'src/mails/entities/mail.entity';
-import { Newsletter } from 'src/newsletters/entities/newsletter.entity';
 import {
   BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
   ManyToOne,
-  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -22,9 +20,18 @@ export class Step extends BaseEntity {
   @CreateDateColumn()
   createdAt: Date;
 
-  @ManyToOne((type) => User, (user) => user.steps)
-  user: User;
+  @Column()
+  userId: number;
 
-  @ManyToOne((type) => Mail, (mail) => mail.steps, { nullable: true })
-  mail: Mail;
+  @Column({ nullable: true })
+  mailId: number;
+
+  @ManyToOne(() => User, (user) => user.steps, {
+    onDelete: 'CASCADE', // 관련된 User가 삭제되면 Mail도 자동으로 삭제됩니다.
+    eager: false,
+  })
+  user?: User;
+
+  @ManyToOne(() => Mail, (mail) => mail.steps, { nullable: true })
+  mail?: Mail;
 }

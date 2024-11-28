@@ -24,7 +24,7 @@ export class MailsService {
     return this.mailRepository.find({
       where: {
         id,
-        receivedAt: Between(startOfDay, endOfDay),
+        createdAt: Between(startOfDay, endOfDay),
       },
     });
   }
