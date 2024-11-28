@@ -1,7 +1,6 @@
 import { User } from 'src/auth/entities/auth.entity';
 import { Mail } from 'src/mails/entities/mail.entity';
 import {
-  BaseEntity,
   Column,
   CreateDateColumn,
   Entity,
@@ -10,7 +9,7 @@ import {
 } from 'typeorm';
 
 @Entity()
-export class Step extends BaseEntity {
+export class Step {
   @PrimaryGeneratedColumn()
   id: number;
 

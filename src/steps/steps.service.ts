@@ -1,26 +1,33 @@
 import { Injectable } from '@nestjs/common';
 import { CreateStepDto } from './dto/create-step.dto';
 import { UpdateStepDto } from './dto/update-step.dto';
+import { StepsRepository } from './steps.repository';
 
 @Injectable()
 export class StepsService {
-  create(createStepDto: CreateStepDto) {
-    return 'This action adds a new step';
+  constructor(private readonly stepsRepository: StepsRepository) {}
+
+  async create(createStepDto: CreateStepDto, userId: number, mailId?: number) {
+    return await this.stepsRepository.createStep(createStepDto, userId, mailId);
   }
 
-  findAll() {
-    return `This action returns all steps`;
+  findAllByUser(userId: number, page?: number) {
+    return this.stepsRepository.find({
+      where: { userId },
+      take: 20,
+      skip: (page - 1) * 20,
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} step`;
+  async findOne(id: number) {
+    return await this.stepsRepository.findOne({ where: { id } });
   }
 
-  update(id: number, updateStepDto: UpdateStepDto) {
-    return `This action updates a #${id} step`;
+  async update(id: number, updateStepDto: UpdateStepDto) {
+    return await this.stepsRepository.update(id, updateStepDto);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} step`;
+  async remove(id: number) {
+    return await this.stepsRepository.delete(id);
   }
 }
