@@ -23,12 +23,26 @@ export class CreateNewsletterDto {
   @IsString()
   description?: string;
 
+  @ApiProperty({
+    example: 'https://kofearticle.substack.com',
+  })
   @IsString()
   serviceUrl?: string;
 
+  @ApiProperty({
+    example: 'https://kofearticle.substack.com/subscribe',
+  })
   @IsString()
   subscriptionUrl?: string;
 
+  @ApiProperty({
+    example: 'https://kofearticle.substack.com/archive',
+  })
   @IsString()
   archiveUrl?: string;
+
+  @ApiProperty({
+    example: false,
+  })
+  isValidated?: boolean;
 }
