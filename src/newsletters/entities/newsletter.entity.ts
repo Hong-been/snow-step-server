@@ -37,6 +37,9 @@ export class Newsletter {
   @Column({ nullable: true })
   description: string;
 
+  @Column({ nullable: true })
+  imageUrl: string;
+
   @Column({
     nullable: true,
     type: 'enum',

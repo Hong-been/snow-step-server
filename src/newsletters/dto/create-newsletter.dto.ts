@@ -18,6 +18,12 @@ export class CreateNewsletterDto {
   email: string;
 
   @ApiProperty({
+    example: 'https://kofearticle.substack.com/profile/image',
+  })
+  @IsString()
+  imageUrl?: string;
+
+  @ApiProperty({
     example:
       '매주 한국어로 다양한 아티클을 번역 혹은 작성된 프론트엔드 글을 제공하는 서비스',
   })

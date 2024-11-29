@@ -23,6 +23,12 @@ export class UpdateNewsletterDto extends PartialType(CreateNewsletterDto) {
   email: string;
 
   @ApiProperty({
+    example: 'https://kofearticle.substack.com/profile/image',
+    description: '뉴스레터 이미지 주소',
+  })
+  imageUrl?: string;
+
+  @ApiProperty({
     example: '뉴스레터 주소',
     description: '뉴스레터 주소',
   })
